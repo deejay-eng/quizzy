@@ -3,7 +3,7 @@
 A simple quiz application built with Next.js (App Router) that fetches 15 questions from Open Trivia DB, runs a 30-minute timed quiz, and shows a detailed report at the end.  
 
 ## Live Demo
-- [Deployed URL](quizzy-git-main-djs-projects-5304a308.vercel.app)
+[Deployed URL](quizzy-git-main-djs-projects-5304a308.vercel.app)
 
 ## Features 
 - Start page to collect user email and begin the quiz flow.  
