@@ -1,66 +1,75 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+"use client";
 
-export default function Home() {
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { clearState, loadState, saveState } from "../lib/storage";
+
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+}
+
+export default function StartPage() {
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    // If quiz is already running, go to it.
+    const state = loadState();
+    if (state?.status === "in_progress") router.replace("/quiz");
+    if (state?.status === "submitted") router.replace("/report");
+  }, [router]);
+
+  function start() {
+    setError("");
+    const e = email.trim();
+    if (!isValidEmail(e)) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+
+    clearState();
+    saveState({
+      email: e,
+      status: "in_progress",
+      startedAt: Date.now(),
+      durationSeconds: 30 * 60, // 30 minutes
+      questions: [],
+      answers: {}, // { [questionIndex]: choiceString }
+      visited: {}, // { [questionIndex]: true }
+      submittedAt: null,
+    });
+
+    router.push("/quiz");
+  }
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <div className="container">
+      <div className="card">
+        <h1 className="h1">Quiz Application</h1>
+        <p className="p">
+          Enter your email to start. You will get 15 questions and 30 minutes.
+        </p>
+
+        <label className="small">Email address</label>
+        <input
+          className="input"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="you@example.com"
         />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.js file.</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+
+        {error ? <p className="p" style={{ color: "var(--danger)" }}>{error}</p> : null}
+
+        <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
+          <button className="btn primary" onClick={start}>Start Quiz</button>
         </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+
+        <hr className="hr" />
+        <p className="small">
+          Data source: Open Trivia DB (api.php?amount=15).
+        </p>
+      </div>
     </div>
   );
 }
